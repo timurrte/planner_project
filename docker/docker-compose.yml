@@ -1,17 +1,17 @@
 services:
   mysql:
     image: mysql:latest
-    container_name: planner_db
+    container_name: sks_db
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: root 
-      MYSQL_DATABASE: planner
+      MYSQL_DATABASE: sks
       MYSQL_USER: user
       MYSQL_PASSWORD: 12345678
     ports:
       - "3306:3306"
     volumes:
-      - planner_data:/var/lib/mysql
+      - schedule_data:/var/lib/mysql
 
 volumes:
-  planner_data:
+  schedule_data:
