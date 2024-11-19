@@ -12,14 +12,14 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 public class GetterFromFileOfShedule {
     private final String pathToFile;
-    private final Map<String, List<String>> teachers;
+    private final Map<String, List<Assignment>> groups;
 
     public GetterFromFileOfShedule(String pathToFile) {
         this.pathToFile = pathToFile;
-        this.teachers = new HashMap<>();
+        this.groups = new HashMap<>();
     }
 
-    public Map<String, List<String>> getData() throws IOException {
+    public Map<String, List<Assignment>> getData() throws IOException {
         try (FileInputStream fin = new FileInputStream(pathToFile);
              Workbook workbook = new XSSFWorkbook(fin)) {
 
@@ -36,13 +36,13 @@ public class GetterFromFileOfShedule {
     }
 
     private void parseSheet(Sheet sheet, DataFormatter formatter) {
-        Row headerRow = sheet.getRow(0);
+        Row headerRow = sheet.getRow(6);
         if (headerRow == null) return;
 
         String currentDay = "";
         
-        // Зчитуємо розклад занять починаючи з 4 рядку
-        for (int rowIndex = 3; rowIndex <= sheet.getLastRowNum(); rowIndex++) {
+        // Зчитуємо розклад занять починаючи з 9 рядку
+        for (int rowIndex = 8; rowIndex <= sheet.getLastRowNum(); rowIndex++) {
             Row row = sheet.getRow(rowIndex);
             if (row == null) continue;
 
@@ -63,15 +63,15 @@ public class GetterFromFileOfShedule {
                 if (cellValue.isEmpty()) continue;
 
                 // Визначення чи пара Чисельник/Знаменник
-                String partIndicator = getSplitCellIndicator(row, sheet, colIndex, formatter);
+                Numerator partIndicator = getSplitCellIndicator(row);
 
                 // Визначаємо викладача
-                String teacher = getTeacherName(headerRow, colIndex, formatter);
-                if (teacher != null && !teacher.isEmpty()) {
-                    String combinedValue = String.format("%s, %s, %s %s", currentDay, time, cellValue, partIndicator);
+                String group = getGroup(headerRow, colIndex, formatter);
+                if (group != null && !group.isEmpty()) {
+                	Assignment assignment = new Assignment(currentDay, time, cellValue, partIndicator);
                     // Якщо ключ в ХешМапі відсутній то створюємо пустий ArrayList
                     // Додаємо до масиву дані про заняття з розкладу
-                    teachers.computeIfAbsent(teacher, k -> new ArrayList<>()).add(combinedValue);
+                    teachers.computeIfAbsent(group, k -> new ArrayList<>()).add(assignment);
                 }
             }
         }
@@ -84,9 +84,9 @@ public class GetterFromFileOfShedule {
     * @param  columnIndex номер колонки
     * @return  ім'я викладача
     */
-    private String getTeacherName(Row headerRow, int columnIndex, DataFormatter formatter) {
+    private String getGroup(Row row, int columnIndex, DataFormatter formatter) {
         // Зчитуємо 1 рядок, який зберігає ім'я викладача
-    	Cell headerCell = headerRow.getCell(columnIndex);
+    	Cell headerCell = row.getCell(columnIndex);
         if (headerCell != null) {
             return formatter.formatCellValue(headerCell);
         }
@@ -99,14 +99,14 @@ public class GetterFromFileOfShedule {
     * @param  currentRow комірка в файлі
     * @return чисельник/знаменник
     */
-    private String getSplitCellIndicator(Row currentRow) {
+    private Numerator getSplitCellIndicator(Row currentRow) {
 
         int rowIndex = currentRow.getRowNum();
 
         if (rowIndex % 2 != 0) {
-            return "Чисельник";
+            return Numerator.Chyselnik;
         } else {
-            return "Знаменник";
+            return Numerator.Znamennyk;
         }
     }
 }
