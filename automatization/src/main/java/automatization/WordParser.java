@@ -33,7 +33,6 @@ public class WordParser {
     	ArrayList<String> matchedWords = new ArrayList<String>();
         for (String word : WORD_LIST) {
             if (word.startsWith(candidate)) {
-            	System.out.println(word);
                 matchedWords.add(word);
             }
         }
@@ -44,7 +43,8 @@ public class WordParser {
     public static String reconstructWord(String fragmentedWord) {
         StringBuilder result = new StringBuilder();
         String[] parts = fragmentedWord.split("\\s+");
-
+        
+        
         for (String part : parts) {
             if (isInList(part)) {
                 result.append(part).append(" ");

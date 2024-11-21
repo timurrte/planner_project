@@ -100,16 +100,18 @@ public class ScheduleReader {
             
             if (!teacherName.isBlank() && hasHyperlink) {
             	cellValue = cellValue.replaceAll(teacherName, "");
+            	String classroom = getClassroom(cellValue);
             	cellValue = parseClassName(cellValue);
-                createAndStoreAssignment(cellValue, currentDay, time, teacherName,  headerRow, colIndex, formatter, Numerator.Chyselnik);
+                createAndStoreAssignment(cellValue, currentDay, time, teacherName, classroom,  headerRow, colIndex, formatter, Numerator.Chyselnik);
             } else if (!teacherName.isBlank()) {
                 Row nextRow = row.getSheet().getRow(row.getRowNum() + 1);
                 if (nextRow != null) {
                     Cell lowerCell = nextRow.getCell(colIndex);
                     if (lowerCell != null && lowerCell.getHyperlink() != null) {
                     	String className = cleanClassName(formatter.formatCellValue(lowerCell));
+                    	String classroom = getClassroom(cellValue);
                     	className = parseClassName(className);
-                        createAndStoreAssignment(className, currentDay, time, teacherName.trim(), headerRow, colIndex, formatter, Numerator.Chyselnik);
+                        createAndStoreAssignment(className, currentDay, time, teacherName, classroom, headerRow, colIndex, formatter, Numerator.Chyselnik);
                         continue;
                     }
                 }
@@ -117,11 +119,11 @@ public class ScheduleReader {
         }
     }
 
-    private void createAndStoreAssignment(String details, String currentDay, String time, String teacherName, Row headerRow, int colIndex, DataFormatter formatter, Numerator numerator) {
+    private void createAndStoreAssignment(String details, String currentDay, String time, String teacherName, String classroom, Row headerRow, int colIndex, DataFormatter formatter, Numerator numerator) {
         String groupName = getGroupName(headerRow, colIndex, formatter);
         if (groupName == null || groupName.isEmpty()) return;
 
-        Assignment assignment = new Assignment(currentDay, time, details, teacherName, groupName, numerator);
+        Assignment assignment = new Assignment(currentDay, time, details, teacherName, classroom, groupName, numerator);
         scheduleByGroup.computeIfAbsent(groupName, k -> new ArrayList<>()).add(assignment);
     }
 
@@ -134,6 +136,13 @@ public class ScheduleReader {
         }
         return "";
     }
+    
+    private String getClassroom(String rawCell) {
+        String regex = "\\b\\d{3}[а-яА-Яa-zA-Z]?";
+        java.util.regex.Matcher matcher = java.util.regex.Pattern.compile(regex).matcher(rawCell);
+        return matcher.find() ? matcher.group() : "online";
+    }
+
     
     private String parseClassName(String rawName) {
         if (rawName == null || rawName.isBlank()) return rawName;
@@ -148,7 +157,6 @@ public class ScheduleReader {
         }
         rawName = rawName.replaceAll("\\s+", " ").trim();
         rawName = rawName.replaceAll("([а-яА-Яa-zA-Z])\\s+([а-яА-Яa-zA-Z])", "$1 $2");
-
         return rawName;
     }
     private String getGroupName(Row headerRow, int columnIndex, DataFormatter formatter) {

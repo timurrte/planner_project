@@ -9,23 +9,27 @@ public class Assignment {
 	private String form_of_lesson;
 	private String form_of_studying;
 	private String time_of_lesson;
+	private String classroom;
+
 	private Numerator week_type_of_lesson;
 	
 	public Assignment() {
 		
 	}
 	
-	public Assignment(String day, String time, String lesson, String teacher, String group, Numerator partIndicator) {
+	public Assignment(String day, String time, String lesson, String teacher, String classroom, String group, Numerator partIndicator) {
 		this.day = day;
 		this.time_of_lesson = time;
 		this.week_type_of_lesson = partIndicator;
 		this.subject = lesson;
-		this.setTeacher(teacher);
+		this.classroom = classroom;
+		this.teacher = teacher;
 		System.out.println("Day: "+ day);
 		System.out.println("Time: "+ time);
 		System.out.println("Assignment: " + lesson);
 		System.out.println("Teacher: " + teacher);
-		System.out.println("Group: " + group);
+		System.out.println("Classroom: " + classroom);
+		System.out.println("Group: " + group + "\n");
 	}
 
 	public String getSubject() {
@@ -74,6 +78,14 @@ public class Assignment {
 
 	public void setForm_of_studying(String form_of_studying) {
 		this.form_of_studying = form_of_studying;
+	}
+	
+	public String getClassroom() {
+		return classroom;
+	}
+
+	public void setClassroom(String classroom) {
+		this.classroom = classroom;
 	}
 
 	public String getTime_of_lesson() {
