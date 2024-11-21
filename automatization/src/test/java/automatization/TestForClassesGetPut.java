@@ -11,9 +11,9 @@ public class TestForClassesGetPut {
   public static void main (String[] args) throws Exception {
 	Dotenv env = Dotenv.load();
     ArrayList<Assignment> data = new ArrayList<>();
-    GetterFromFileOfShedule getterFromExcel = new GetterFromFileOfShedule(args[0]);
-    Map<String, List<Assignment>> timetable = getterFromExcel.getData();
-    
+    ScheduleReader getterFromExcel = new ScheduleReader(args[0]);
+
+    Map<String, List<Assignment>> timetable = getterFromExcel.readSchedule();
     
 //    Connection con = DriverManager.getConnection("jdbc:mysql://localhost/" + env.get("MYSQL_DATABASE"), env.get("MYSQL_USER"), env.get("MYSQL_PASSWORD"));
 //    Statement st = con.createStatement();

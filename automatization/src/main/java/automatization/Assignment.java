@@ -2,9 +2,7 @@ package automatization;
 
 public class Assignment {
 	private String subject;
-	private String first_name;
-	private String last_name;
-	private String middle_name;
+	private String teacher;
 	private String subject_abbr;
 	private String day;
 	private String group_of_students;
@@ -17,12 +15,17 @@ public class Assignment {
 		
 	}
 	
-	public Assignment(String day, String time, String cellValue, Numerator partIndicator) {
+	public Assignment(String day, String time, String lesson, String teacher, String group, Numerator partIndicator) {
 		this.day = day;
 		this.time_of_lesson = time;
 		this.week_type_of_lesson = partIndicator;
-		this.subject = cellValue;
-		System.out.println(cellValue);
+		this.subject = lesson;
+		this.setTeacher(teacher);
+		System.out.println("Day: "+ day);
+		System.out.println("Time: "+ time);
+		System.out.println("Assignment: " + lesson);
+		System.out.println("Teacher: " + teacher);
+		System.out.println("Group: " + group);
 	}
 
 	public String getSubject() {
@@ -31,30 +34,6 @@ public class Assignment {
 
 	public void setSubject(String subject) {
 		this.subject = subject;
-	}
-
-	public String getFirst_name() {
-		return first_name;
-	}
-
-	public void setFirst_name(String first_name) {
-		this.first_name = first_name;
-	}
-
-	public String getLast_name() {
-		return last_name;
-	}
-
-	public void setLast_name(String last_name) {
-		this.last_name = last_name;
-	}
-
-	public String getMiddle_name() {
-		return middle_name;
-	}
-
-	public void setMiddle_name(String middle_name) {
-		this.middle_name = middle_name;
 	}
 
 	public String getSubject_abbr() {
@@ -111,5 +90,13 @@ public class Assignment {
 
 	public void setWeek_type_of_lesson(Numerator week_type_of_lesson) {
 		this.week_type_of_lesson = week_type_of_lesson;
+	}
+
+	public String getTeacher() {
+		return teacher;
+	}
+
+	public void setTeacher(String teacher) {
+		this.teacher = teacher;
 	}
 }
