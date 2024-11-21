@@ -136,19 +136,10 @@ public class ScheduleReader {
     }
     
     private String parseClassName(String rawName) {
-    	String phrase = "";
-    	String chars = "";
-    	for (int i = 0; i<rawName.length(); i++) {
-    		char ch = rawName.charAt(i);
-    		if (ch == ' ') continue;
-    		if (Character.isDigit(ch)) continue;
-    		chars += ch;
-    		if (WordParser.isInList(chars)) {
-    			phrase += chars +" ";
-    			chars = "";
-    		}
-    	}
-    	return phrase.trim();
+        if (rawName == null || rawName.isBlank()) return rawName;
+
+        String cleanedName = rawName.replaceAll("\\s+", " ").trim();
+        return WordParser.reconstructWord(cleanedName);
     }
 
     private String cleanClassName(String rawName) {
@@ -162,7 +153,9 @@ public class ScheduleReader {
     }
     private String getGroupName(Row headerRow, int columnIndex, DataFormatter formatter) {
         Cell headerCell = headerRow.getCell(columnIndex);
-        return headerCell != null ? formatter.formatCellValue(headerCell) : "";
+        String groupName = formatter.formatCellValue(headerCell).trim();
+        groupName = groupName.replaceAll("\\s+", "-");
+        return groupName;
     }
     
     private List<String> loadNamesFromFile(String filePath) throws IOException {
