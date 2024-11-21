@@ -95,18 +95,21 @@ public class ScheduleReader {
 
             boolean hasHyperlink = cell.getHyperlink() != null;
 
-            String cellValue = formatter.formatCellValue(cell);
-            boolean containsName = containsNameFromList(cellValue);
-
-            if (containsName && hasHyperlink) {
-                createAndStoreAssignment(cellValue, currentDay, time, headerRow, colIndex, formatter, Numerator.Chyselnik);
-            } else if (containsName) {
+            String cellValue = cleanClassName(formatter.formatCellValue(cell));
+            String teacherName = containsNameFromList(cellValue);            
+            
+            if (!teacherName.isBlank() && hasHyperlink) {
+            	cellValue = cellValue.replaceAll(teacherName, "");
+            	cellValue = parseClassName(cellValue);
+                createAndStoreAssignment(cellValue, currentDay, time, teacherName,  headerRow, colIndex, formatter, Numerator.Chyselnik);
+            } else if (!teacherName.isBlank()) {
                 Row nextRow = row.getSheet().getRow(row.getRowNum() + 1);
                 if (nextRow != null) {
                     Cell lowerCell = nextRow.getCell(colIndex);
                     if (lowerCell != null && lowerCell.getHyperlink() != null) {
-                        String combinedValue = cellValue + " " + formatter.formatCellValue(lowerCell);
-                        createAndStoreAssignment(combinedValue, currentDay, time, headerRow, colIndex, formatter, Numerator.Chyselnik);
+                    	String className = cleanClassName(formatter.formatCellValue(lowerCell));
+                    	className = parseClassName(className);
+                        createAndStoreAssignment(className, currentDay, time, teacherName.trim(), headerRow, colIndex, formatter, Numerator.Chyselnik);
                         continue;
                     }
                 }
@@ -114,32 +117,52 @@ public class ScheduleReader {
         }
     }
 
-    private void createAndStoreAssignment(String details, String currentDay, String time, Row headerRow, int colIndex, DataFormatter formatter, Numerator numerator) {
+    private void createAndStoreAssignment(String details, String currentDay, String time, String teacherName, Row headerRow, int colIndex, DataFormatter formatter, Numerator numerator) {
         String groupName = getGroupName(headerRow, colIndex, formatter);
         if (groupName == null || groupName.isEmpty()) return;
 
-        Assignment assignment = new Assignment(currentDay, time, details, teacher, groupName, numerator);
+        Assignment assignment = new Assignment(currentDay, time, details, teacherName, groupName, numerator);
         scheduleByGroup.computeIfAbsent(groupName, k -> new ArrayList<>()).add(assignment);
     }
 
     
-    private boolean containsNameFromList(String value) {
+    private String containsNameFromList(String value) {
         for (String name : this.names) {
             if (value.contains(name)) {
-                return true;
+                return name;
             }
         }
-        return false;
+        return "";
+    }
+    
+    private String parseClassName(String rawName) {
+    	String phrase = "";
+    	String chars = "";
+    	for (int i = 0; i<rawName.length(); i++) {
+    		char ch = rawName.charAt(i);
+    		if (ch == ' ') continue;
+    		if (Character.isDigit(ch)) continue;
+    		chars += ch;
+    		if (WordParser.isInList(chars)) {
+    			phrase += chars +" ";
+    			chars = "";
+    		}
+    	}
+    	return phrase.trim();
     }
 
+    private String cleanClassName(String rawName) {
+        if (rawName == null || rawName.isBlank()) {
+            return rawName;
+        }
+        rawName = rawName.replaceAll("\\s+", " ").trim();
+        rawName = rawName.replaceAll("([а-яА-Яa-zA-Z])\\s+([а-яА-Яa-zA-Z])", "$1 $2");
 
+        return rawName;
+    }
     private String getGroupName(Row headerRow, int columnIndex, DataFormatter formatter) {
         Cell headerCell = headerRow.getCell(columnIndex);
         return headerCell != null ? formatter.formatCellValue(headerCell) : "";
-    }
-
-    private Numerator determineNumerator(Row row) {
-        return row.getRowNum() % 2 == 0 ? Numerator.Znamennyk : Numerator.Chyselnik;
     }
     
     private List<String> loadNamesFromFile(String filePath) throws IOException {
