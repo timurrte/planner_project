@@ -94,25 +94,24 @@ public class ScheduleReader {
             if (cell == null || formatter.formatCellValue(cell).isEmpty()) continue;
 
             boolean hasHyperlink = cell.getHyperlink() != null;
-
-            String cellValue = cleanClassName(formatter.formatCellValue(cell));
-            String teacherName = containsNameFromList(cellValue);            
             
-            if (!teacherName.isBlank() && hasHyperlink) {
-            	cellValue = cellValue.replaceAll(teacherName, "");
-            	String classroom = getClassroom(cellValue);
-            	cellValue = parseClassName(cellValue);
-            	Numerator num = cell.getRowIndex() % 2 == 0 ? Numerator.Chyselnik : Numerator.Znamennyk;
-                createAndStoreAssignment(cellValue, currentDay, time, teacherName, classroom,  headerRow, colIndex, formatter, num);
-            } else if (!teacherName.isBlank()) {
+            CellParser cellParser = new CellParser(cell, formatter);
+            String teacher = cellParser.getTeacherInCell(names);
+            
+            if (!teacher.isBlank() && hasHyperlink) {
+            	String classroom = cellParser.getClassroom();
+            	String className = cellParser.parseClassName();
+                Numerator num = cell.getRowIndex() % 2 == 0 ? Numerator.Chyselnik : Numerator.Znamennyk;
+                createAndStoreAssignment(className, currentDay, time, teacher, classroom,  headerRow, colIndex, formatter, num);
+            } else if (!teacher.isBlank()) {
                 Row nextRow = row.getSheet().getRow(row.getRowNum() + 1);
                 if (nextRow != null) {
                     Cell lowerCell = nextRow.getCell(colIndex);
                     if (lowerCell != null && lowerCell.getHyperlink() != null) {
-                    	String className = cleanClassName(formatter.formatCellValue(lowerCell));
-                    	String classroom = getClassroom(cellValue);
-                    	className = parseClassName(className);
-                        createAndStoreAssignment(className, currentDay, time, teacherName, classroom, headerRow, colIndex, formatter, Numerator.BOTH);
+                    	CellParser lowerCellParser = new CellParser(lowerCell, formatter);
+                    	String className = lowerCellParser.parseClassName();
+                    	String classroom = lowerCellParser.getClassroom();
+                        createAndStoreAssignment(className, currentDay, time, teacher, classroom, headerRow, colIndex, formatter, Numerator.BOTH);
                         continue;
                     }
                 }
@@ -120,51 +119,19 @@ public class ScheduleReader {
         }
     }
 
-    private void createAndStoreAssignment(String details, String currentDay, String time, String teacherName, String classroom, Row headerRow, int colIndex, DataFormatter formatter, Numerator numerator) {
-        String groupName = getGroupName(headerRow, colIndex, formatter);
+    private void createAndStoreAssignment(String subject, String currentDay, String time, String teacherName, String classroom, Row headerRow, int colIndex, DataFormatter formatter, Numerator numerator) {
+        String groupName = getGroupName(headerRow, colIndex);
         if (groupName == null || groupName.isEmpty()) return;
 
-        Assignment assignment = new Assignment(currentDay, time, details, teacherName, classroom, groupName, numerator);
+        Assignment assignment = new Assignment(currentDay, time, subject, teacherName, classroom, groupName, numerator);
         scheduleByGroup.computeIfAbsent(groupName, k -> new ArrayList<>()).add(assignment);
     }
 
-    
-    private String containsNameFromList(String value) {
-        for (String name : this.names) {
-            if (value.contains(name)) {
-                return name;
-            }
-        }
-        return "";
-    }
-    
-    private String getClassroom(String rawCell) {
-        String regex = "\\b\\d{3}[а-яА-Яa-zA-Z]?";
-        java.util.regex.Matcher matcher = java.util.regex.Pattern.compile(regex).matcher(rawCell);
-        return matcher.find() ? matcher.group() : "online";
-    }
-
-    
-    private String parseClassName(String rawName) {
-        if (rawName == null || rawName.isBlank()) return rawName;
-
-        String cleanedName = rawName.replaceAll("\\s+", " ").trim();
-        return WordParser.reconstructWord(cleanedName);
-    }
-
-    private String cleanClassName(String rawName) {
-        if (rawName == null || rawName.isBlank()) {
-            return rawName;
-        }
-        rawName = rawName.replaceAll("\\s+", " ").trim();
-        rawName = rawName.replaceAll("([а-яА-Яa-zA-Z])\\s+([а-яА-Яa-zA-Z])", "$1 $2");
-        return rawName;
-    }
-    private String getGroupName(Row headerRow, int columnIndex, DataFormatter formatter) {
+    public String getGroupName(Row headerRow, int columnIndex) {
         Cell headerCell = headerRow.getCell(columnIndex);
-        String groupName = formatter.formatCellValue(headerCell).trim();
-        groupName = groupName.replaceAll("\\s+", "-");
-        return groupName;
+        DataFormatter formatter = new DataFormatter();
+		String groupName = formatter.formatCellValue(headerCell).trim();
+        return groupName.replaceAll("\\s+", "-");
     }
     
     private List<String> loadNamesFromFile(String filePath) throws IOException {
