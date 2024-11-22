@@ -30,7 +30,7 @@ public class CellParser {
         return rawName;
     }
 
-    public String parseClassName() {
+    public String getClassName() {
     	String rawName = this.formatter.formatCellValue(this.cell);
         if (rawName == null || rawName.isBlank()) return rawName;
         String className = cleanClassName(rawName);

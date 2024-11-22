@@ -100,7 +100,7 @@ public class ScheduleReader {
             
             if (!teacher.isBlank() && hasHyperlink) {
             	String classroom = cellParser.getClassroom();
-            	String className = cellParser.parseClassName();
+            	String className = cellParser.getClassName();
                 Numerator num = cell.getRowIndex() % 2 == 0 ? Numerator.Chyselnik : Numerator.Znamennyk;
                 createAndStoreAssignment(className, currentDay, time, teacher, classroom,  headerRow, colIndex, formatter, num);
             } else if (!teacher.isBlank()) {
@@ -109,7 +109,7 @@ public class ScheduleReader {
                     Cell lowerCell = nextRow.getCell(colIndex);
                     if (lowerCell != null && lowerCell.getHyperlink() != null) {
                     	CellParser lowerCellParser = new CellParser(lowerCell, formatter);
-                    	String className = lowerCellParser.parseClassName();
+                    	String className = lowerCellParser.getClassName();
                     	String classroom = lowerCellParser.getClassroom();
                         createAndStoreAssignment(className, currentDay, time, teacher, classroom, headerRow, colIndex, formatter, Numerator.BOTH);
                         continue;
