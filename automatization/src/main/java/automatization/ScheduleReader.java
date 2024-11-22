@@ -102,7 +102,8 @@ public class ScheduleReader {
             	cellValue = cellValue.replaceAll(teacherName, "");
             	String classroom = getClassroom(cellValue);
             	cellValue = parseClassName(cellValue);
-                createAndStoreAssignment(cellValue, currentDay, time, teacherName, classroom,  headerRow, colIndex, formatter, Numerator.Chyselnik);
+            	Numerator num = cell.getRowIndex() % 2 == 0 ? Numerator.Chyselnik : Numerator.Znamennyk;
+                createAndStoreAssignment(cellValue, currentDay, time, teacherName, classroom,  headerRow, colIndex, formatter, num);
             } else if (!teacherName.isBlank()) {
                 Row nextRow = row.getSheet().getRow(row.getRowNum() + 1);
                 if (nextRow != null) {
@@ -111,7 +112,7 @@ public class ScheduleReader {
                     	String className = cleanClassName(formatter.formatCellValue(lowerCell));
                     	String classroom = getClassroom(cellValue);
                     	className = parseClassName(className);
-                        createAndStoreAssignment(className, currentDay, time, teacherName, classroom, headerRow, colIndex, formatter, Numerator.Chyselnik);
+                        createAndStoreAssignment(className, currentDay, time, teacherName, classroom, headerRow, colIndex, formatter, Numerator.BOTH);
                         continue;
                     }
                 }

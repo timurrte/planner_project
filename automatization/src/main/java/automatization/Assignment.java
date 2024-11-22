@@ -3,33 +3,40 @@ package automatization;
 public class Assignment {
 	private String subject;
 	private String teacher;
-	private String subject_abbr;
 	private String day;
 	private String group_of_students;
-	private String form_of_lesson;
-	private String form_of_studying;
 	private String time_of_lesson;
 	private String classroom;
-
+	
+	private FormOfStudying form_of_studying;
 	private Numerator week_type_of_lesson;
 	
 	public Assignment() {
 		
 	}
 	
-	public Assignment(String day, String time, String lesson, String teacher, String classroom, String group, Numerator partIndicator) {
-		this.day = day;
-		this.time_of_lesson = time;
-		this.week_type_of_lesson = partIndicator;
+	public Assignment(String day, String time, String lesson, String teacher, 
+			String classroom, String group, Numerator weekTypeIndicator) {
 		this.subject = lesson;
-		this.classroom = classroom;
 		this.teacher = teacher;
-		System.out.println("Day: "+ day);
-		System.out.println("Time: "+ time);
-		System.out.println("Assignment: " + lesson);
-		System.out.println("Teacher: " + teacher);
-		System.out.println("Classroom: " + classroom);
-		System.out.println("Group: " + group + "\n");
+		this.day = day;	
+		this.group_of_students = group;
+		this.time_of_lesson = time;
+		if (classroom.equals("online")) {
+			this.classroom = "";
+			this.form_of_studying = FormOfStudying.ONLINE;
+		} else {
+			this.classroom = classroom;
+			this.form_of_studying = FormOfStudying.OFFLINE;
+		}
+		this.week_type_of_lesson = weekTypeIndicator;
+	}
+	
+	public String toString() {
+		return "\nГрупа: " + this.getGroup_of_students() + "\nЗаняття: " + this.getSubject()
+				+ "\nДень: " + this.getDay() + "\nЧас: " + this.getTime_of_lesson()
+				+ "\nВикладач: " + this.getTeacher() + "\nКабінет: " + this.getClassroom() + "\nТип занять: " + this.getForm_of_studying()
+				+ "\nТиждень: " + this.getWeek_type_of_lesson();
 	}
 
 	public String getSubject() {
@@ -39,13 +46,13 @@ public class Assignment {
 	public void setSubject(String subject) {
 		this.subject = subject;
 	}
-
-	public String getSubject_abbr() {
-		return subject_abbr;
+	
+	public String getTeacher() {
+		return teacher;
 	}
 
-	public void setSubject_abbr(String subject_abbr) {
-		this.subject_abbr = subject_abbr;
+	public void setTeacher(String teacher) {
+		this.teacher = teacher;
 	}
 
 	public String getDay() {
@@ -63,21 +70,13 @@ public class Assignment {
 	public void setGroup_of_students(String group_of_students) {
 		this.group_of_students = group_of_students;
 	}
-
-	public String getForm_of_lesson() {
-		return form_of_lesson;
+	
+	public String getTime_of_lesson() {
+		return time_of_lesson;
 	}
 
-	public void setForm_of_lesson(String form_of_lesson) {
-		this.form_of_lesson = form_of_lesson;
-	}
-
-	public String getForm_of_studying() {
-		return form_of_studying;
-	}
-
-	public void setForm_of_studying(String form_of_studying) {
-		this.form_of_studying = form_of_studying;
+	public void setTime_of_lesson(String time_of_lesson) {
+		this.time_of_lesson = time_of_lesson;
 	}
 	
 	public String getClassroom() {
@@ -88,14 +87,6 @@ public class Assignment {
 		this.classroom = classroom;
 	}
 
-	public String getTime_of_lesson() {
-		return time_of_lesson;
-	}
-
-	public void setTime_of_lesson(String time_of_lesson) {
-		this.time_of_lesson = time_of_lesson;
-	}
-
 	public Numerator getWeek_type_of_lesson() {
 		return week_type_of_lesson;
 	}
@@ -103,12 +94,11 @@ public class Assignment {
 	public void setWeek_type_of_lesson(Numerator week_type_of_lesson) {
 		this.week_type_of_lesson = week_type_of_lesson;
 	}
-
-	public String getTeacher() {
-		return teacher;
+	public FormOfStudying getForm_of_studying() {
+		return form_of_studying;
 	}
 
-	public void setTeacher(String teacher) {
-		this.teacher = teacher;
+	public void setForm_of_studying(FormOfStudying form_of_studying) {
+		this.form_of_studying = form_of_studying;
 	}
 }

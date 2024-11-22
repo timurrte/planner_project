@@ -15,6 +15,12 @@ public class TestForClassesGetPut {
 
     Map<String, List<Assignment>> timetable = getterFromExcel.readSchedule();
     
+    for (String key : timetable.keySet()) {
+    	for (Assignment val : timetable.get(key)) {
+    		System.out.println(val);
+    	}
+    }
+    
 //    Connection con = DriverManager.getConnection("jdbc:mysql://localhost/" + env.get("MYSQL_DATABASE"), env.get("MYSQL_USER"), env.get("MYSQL_PASSWORD"));
 //    Statement st = con.createStatement();
 //    st.executeUpdate("CREATE TABLE IF NOT EXISTS Testing (some_text VARCHAR(100))");
