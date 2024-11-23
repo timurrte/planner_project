@@ -13,6 +13,8 @@ import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
+import automatization.enums.DayOfWeek;
+
 public class ScheduleReader {
     private final String pathToFile;
     private final List<String> names;

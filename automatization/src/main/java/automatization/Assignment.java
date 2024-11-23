@@ -1,5 +1,8 @@
 package automatization;
 
+import automatization.enums.DayOfWeek;
+import automatization.enums.FormOfStudying;
+
 public class Assignment {
 	private String subject;
 	private String teacher;
