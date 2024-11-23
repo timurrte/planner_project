@@ -31,22 +31,37 @@ public class CellParser {
     }
 
     public String getClassName() {
-    	String rawName = this.formatter.formatCellValue(this.cell);
+//    	System.out.println(formatter.formatCellValue(cell));
+        String rawName = formatter.formatCellValue(cell).trim();
         if (rawName == null || rawName.isBlank()) return rawName;
-        String className = cleanClassName(rawName);
-        return WordParser.reconstructWord(className);
+        String reconstructedName = WordParser.reconstructWord(rawName);
+        return cleanClassName(reconstructedName);
     }
+
     
     public String getTeacherInCell(List<String> names) {
     	String cellValue =  cleanClassName(this.formatter.formatCellValue(this.cell));
-    	return containsNameFromList(names, cellValue);
+    	String name = containsNameFromList(names, cellValue);
+    	this.cell.setCellValue(this.formatter.formatCellValue(this.cell).replaceAll(name, ""));
+    	return name;
     }
 
     public String getClassroom() {
         String regex = "\\b\\d{3}[а-яА-Яa-zA-Z]?";
-        Matcher matcher = Pattern.compile(regex).matcher(this.formatter.formatCellValue(cell));
-        return matcher.find() ? matcher.group() : "online";
+        String cellValue = cleanClassName(this.formatter.formatCellValue(cell)).trim();
+        Matcher matcher = Pattern.compile(regex).matcher(cellValue);     
+        String match;
+        if (matcher.find()) {
+            match = matcher.group();
+            cell.setCellValue(cellValue.replaceAll(match, "").trim());
+        } else {
+            match = "online";
+            cell.setCellValue(cellValue.replaceAll(match, "").trim());
+        }
+
+        return match;
     }
+
     
     private String containsNameFromList(List<String> names ,String value) {
         for (String name : names) {

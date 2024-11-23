@@ -7,6 +7,8 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
+import automatization.enums.FormOfStudying;
+
 public class DatabaseHandler {
     private final String url;
     private final String user;

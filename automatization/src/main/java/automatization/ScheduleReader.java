@@ -13,6 +13,8 @@ import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
+import automatization.enums.DayOfWeek;
+
 public class ScheduleReader {
     private final String pathToFile;
     private final List<String> names;
@@ -69,15 +71,20 @@ public class ScheduleReader {
     private Cell getMergedCellValue(Sheet sheet, int rowIndex, int colIndex) {
         for (int i = 0; i < sheet.getNumMergedRegions(); i++) {
             CellRangeAddress mergedRegion = sheet.getMergedRegion(i);
-
             if (mergedRegion.isInRange(rowIndex, colIndex)) {
                 Row mergedRow = sheet.getRow(mergedRegion.getFirstRow());
-                return mergedRow.getCell(mergedRegion.getFirstColumn());
+                if (mergedRow != null) {
+                    Cell mergedCell = mergedRow.getCell(mergedRegion.getFirstColumn());
+                    if (mergedCell != null) {
+                        return mergedCell;
+                    }
+                }
             }
         }
         Row row = sheet.getRow(rowIndex);
         return row != null ? row.getCell(colIndex) : null;
     }
+
 
 
     private DayOfWeek updateDay(Row row, DataFormatter formatter, DayOfWeek currentDay) {
@@ -94,8 +101,7 @@ public class ScheduleReader {
         		case ("четверг"):
         			return DayOfWeek.S;
         		case ("п'ятниця"):
-        			return DayOfWeek.F;
-        			
+        			return DayOfWeek.F;	
         	}
         }
         return currentDay;
@@ -110,7 +116,7 @@ public class ScheduleReader {
             
             CellParser cellParser = new CellParser(cell, formatter);
             String teacher = cellParser.getTeacherInCell(names);
-            
+
             if (!teacher.isBlank() && hasHyperlink) {
             	String classroom = cellParser.getClassroom();
             	String className = cellParser.getClassName();
@@ -122,8 +128,8 @@ public class ScheduleReader {
                     Cell lowerCell = nextRow.getCell(colIndex);
                     if (lowerCell != null && lowerCell.getHyperlink() != null) {
                     	CellParser lowerCellParser = new CellParser(lowerCell, formatter);
-                    	String className = lowerCellParser.getClassName();
                     	String classroom = lowerCellParser.getClassroom();
+                    	String className = lowerCellParser.getClassName();
                         createAndStoreAssignment(className, currentDay, time, teacher, classroom, headerRow, colIndex, formatter, Numerator.BOTH);
                         continue;
                     }

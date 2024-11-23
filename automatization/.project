@@ -26,4 +26,11 @@
 		<nature>org.eclipse.m2e.core.maven2Nature</nature>
 		<nature>org.eclipse.buildship.core.gradleprojectnature</nature>
 	</natures>
+	<linkedResources>
+		<link>
+			<name>config</name>
+			<type>2</type>
+			<location>/home/timurrte/Documents/Учеба/Мережі/Проєкт/config</location>
+		</link>
+	</linkedResources>
 </projectDescription>
