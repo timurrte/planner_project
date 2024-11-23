@@ -30,34 +30,47 @@ public class WordParser {
     }
 
     public static String getMatchingWord(String candidate) {
-    	ArrayList<String> matchedWords = new ArrayList<String>();
+//    	ArrayList<String> matchedWords = new ArrayList<String>();
         for (String word : WORD_LIST) {
-            if (word.startsWith(candidate)) {
-                matchedWords.add(word);
+            if (candidate.startsWith(word)) {
+                return word;
             }
         }
-        if (matchedWords.size() == 1) return matchedWords.get(0);
         return null;
     }
     
     public static String reconstructWord(String fragmentedWord) {
         StringBuilder result = new StringBuilder();
-        String[] parts = fragmentedWord.split("\\s+");
-        
-        
+        StringBuilder word = new StringBuilder();
+        String[] parts = fragmentedWord.replaceAll("[`]", "").split("\\s+");
+
         for (String part : parts) {
-            if (isInList(part)) {
-                result.append(part).append(" ");
-            } else {
-                String match = getMatchingWord(part);
-                if (match != null) {
-                    result.append(match).append(" ");
-                }
+            word.append(part);
+            System.out.println("Current word candidate: " + word.toString());
+
+            String match = getMatchingWord(word.toString());
+            System.out.println(match);
+            if (match != null) {
+                result.append(match).append(" ");
+                word.setLength(0);
             }
         }
+
+        if (word.length() > 0) {
+            String finalMatch = getMatchingWord(word.toString().trim());
+            if (finalMatch != null) {
+                result.append(finalMatch);
+            } else {
+                result.append(word.toString().trim());
+            }
+        }
+
+        System.out.println("Reconstructed word: " + result.toString().trim());
+
         return result.toString().trim();
     }
 
 
-}
 
+
+}

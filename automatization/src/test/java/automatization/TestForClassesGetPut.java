@@ -19,13 +19,15 @@ public class TestForClassesGetPut {
 
     Map<String, List<Assignment>> timetable = getterFromExcel.readSchedule();
 
-    DatabaseHandler dbHandler = new DatabaseHandler(url, user, password);
-    dbHandler.insertTimetableIntoDatabase(timetable);
-
     for (String key : timetable.keySet()) {
     	for (Assignment val : timetable.get(key)) {
     		System.out.println(val);
     	}
     }
+    
+    DatabaseHandler dbHandler = new DatabaseHandler(url, user, password);
+    dbHandler.insertTimetableIntoDatabase(timetable);
+
+
   }
 }
