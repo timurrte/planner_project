@@ -3,7 +3,7 @@ package automatization;
 public class Assignment {
 	private String subject;
 	private String teacher;
-	private String day;
+	private DayOfWeek day;
 	private String group_of_students;
 	private String time_of_lesson;
 	private String classroom;
@@ -15,7 +15,7 @@ public class Assignment {
 		
 	}
 	
-	public Assignment(String day, String time, String lesson, String teacher, 
+	public Assignment(DayOfWeek day, String time, String lesson, String teacher, 
 			String classroom, String group, Numerator weekTypeIndicator) {
 		this.subject = lesson;
 		this.teacher = teacher;
@@ -55,11 +55,11 @@ public class Assignment {
 		this.teacher = teacher;
 	}
 
-	public String getDay() {
+	public DayOfWeek getDay() {
 		return day;
 	}
 
-	public void setDay(String day) {
+	public void setDay(DayOfWeek day) {
 		this.day = day;
 	}
 
