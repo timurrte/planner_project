@@ -47,9 +47,9 @@ public class ScheduleReader {
     private void parseSheet(Sheet sheet, DataFormatter formatter, int startingRow, int endRow) {
         Row headerRow = sheet.getRow(startingRow-3);
         if (headerRow == null) return;
-
-        String currentDay = "";
-
+        
+        DayOfWeek currentDay = DayOfWeek.NONE;
+        
         for (int rowIndex = startingRow; rowIndex <= endRow; rowIndex++) {
             Row row = sheet.getRow(rowIndex);
             if (row == null) continue;
@@ -80,15 +80,28 @@ public class ScheduleReader {
     }
 
 
-    private String updateDay(Row row, DataFormatter formatter, String currentDay) {
+    private DayOfWeek updateDay(Row row, DataFormatter formatter, DayOfWeek currentDay) {
         Cell dayCell = row.getCell(0);
         if (dayCell != null && !formatter.formatCellValue(dayCell).isEmpty()) {
-            return formatter.formatCellValue(dayCell);
+        	String day = formatter.formatCellValue(dayCell);
+        	switch (day.toLowerCase()) {
+        		case ("понеділок"):
+        			return DayOfWeek.M;
+        		case ("вівторок"):
+        			return DayOfWeek.T;
+        		case ("середа"):
+        			return DayOfWeek.W;
+        		case ("четверг"):
+        			return DayOfWeek.S;
+        		case ("п'ятниця"):
+        			return DayOfWeek.F;
+        			
+        	}
         }
         return currentDay;
     }
 
-    private void processAssignmentsForRow(Row row, Row headerRow, String time, String currentDay, DataFormatter formatter) {
+    private void processAssignmentsForRow(Row row, Row headerRow, String time, DayOfWeek currentDay, DataFormatter formatter) {
         for (int colIndex = 2; colIndex < row.getLastCellNum(); colIndex++) {
             Cell cell = row.getCell(colIndex);
             if (cell == null || formatter.formatCellValue(cell).isEmpty()) continue;
@@ -119,7 +132,7 @@ public class ScheduleReader {
         }
     }
 
-    private void createAndStoreAssignment(String subject, String currentDay, String time, String teacherName, String classroom, Row headerRow, int colIndex, DataFormatter formatter, Numerator numerator) {
+    private void createAndStoreAssignment(String subject, DayOfWeek currentDay, String time, String teacherName, String classroom, Row headerRow, int colIndex, DataFormatter formatter, Numerator numerator) {
         String groupName = getGroupName(headerRow, colIndex);
         if (groupName == null || groupName.isEmpty()) return;
 
