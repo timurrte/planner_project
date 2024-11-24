@@ -30,7 +30,6 @@ public class WordParser {
     }
 
     public static String getMatchingWord(String candidate) {
-//    	ArrayList<String> matchedWords = new ArrayList<String>();
         for (String word : WORD_LIST) {
             if (candidate.startsWith(word)) {
                 return word;
@@ -61,8 +60,8 @@ public class WordParser {
                 result.append(word.toString().trim());
             }
         }
-//
-//        System.out.println("Reconstructed word: " + result.toString().trim());
+
+        System.out.println("Reconstructed word: " + result.toString().trim());
 
         return result.toString().trim();
     }

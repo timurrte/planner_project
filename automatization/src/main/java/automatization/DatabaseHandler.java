@@ -35,7 +35,7 @@ public class DatabaseHandler {
                 	pstmt.setString(1, assignment.getTeacher());
                 	pstmt.setString(2, assignment.getSubject());
                     pstmt.setString(3, assignment.getDay().toString());
-                    pstmt.setString(4, assignment.getGroup_of_students());
+                    pstmt.setString(4, assignment.getGroup());
                     pstmt.setString(5, assignment.getTime_of_lesson());
                     pstmt.setString(6, assignment.getClassroom());
                     pstmt.setString(7, weekType == Numerator.Znamennyk ? "знаменник"

@@ -17,13 +17,11 @@ import automatization.enums.DayOfWeek;
 
 public class ScheduleReader {
     private final String pathToFile;
-    private final List<String> names;
     private final Map<String, List<Assignment>> scheduleByGroup;
 
     public ScheduleReader(String pathToFile) throws IOException {
         this.pathToFile = pathToFile;
         this.scheduleByGroup = new HashMap<>();
-		this.names = this.loadNamesFromFile("names.txt");
     }
 
     public Map<String, List<Assignment>> readSchedule() throws IOException {
@@ -42,11 +40,11 @@ public class ScheduleReader {
         return scheduleByGroup;
     }
 
-    private void parseSheet(Sheet sheet, DataFormatter formatter) {
+    private void parseSheet(Sheet sheet, DataFormatter formatter) throws IOException {
     	parseSheet(sheet, formatter, 8, 78);
     }
     
-    private void parseSheet(Sheet sheet, DataFormatter formatter, int startingRow, int endRow) {
+    private void parseSheet(Sheet sheet, DataFormatter formatter, int startingRow, int endRow) throws IOException {
         Row headerRow = sheet.getRow(startingRow-3);
         if (headerRow == null) return;
         
@@ -73,17 +71,14 @@ public class ScheduleReader {
 
         for (int i = 0; i < sheet.getNumMergedRegions(); i++) {
             CellRangeAddress mergedRegion = sheet.getMergedRegion(i);
-            // Check if the current column is within the merged region
             if (mergedRegion.isInRange(rowIndex, colIndex)) {
                 int firstRow = mergedRegion.getFirstRow();
                 int firstCol = mergedRegion.getFirstColumn();
-                System.out.println("Row: " + firstRow + " Col: " + firstCol);
                 Row mergedRow = sheet.getRow(firstRow);
 
                 if (mergedRow != null) {
                     Cell mergedCell = mergedRow.getCell(firstCol);
                     if (mergedCell != null && !formatter.formatCellValue(mergedCell).isBlank()) {
-                    	System.out.println(formatter.formatCellValue(mergedCell));
                         return mergedCell;
                     }
                 }
@@ -114,7 +109,7 @@ public class ScheduleReader {
         return currentDay;
     }
 
-    private void processAssignmentsForRow(Row row, Row headerRow, String time, DayOfWeek currentDay, DataFormatter formatter) {
+    private void processAssignmentsForRow(Row row, Row headerRow, String time, DayOfWeek currentDay, DataFormatter formatter) throws IOException {
         Sheet sheet = row.getSheet();
 
         for (int colIndex = 2; colIndex < row.getLastCellNum(); colIndex++) {
@@ -124,43 +119,25 @@ public class ScheduleReader {
             Cell cell = row.getCell(colIndex);
             if (cell == null || formatter.formatCellValue(cell).isEmpty()) {
                 cell = getMergedCellForColumn(sheet, row.getRowNum(), colIndex);
-                System.out.println(formatter.formatCellValue(cell));
             }
 
             if (cell == null || formatter.formatCellValue(cell).isEmpty()) continue;
+            
+            Numerator numerator = (row.getRowNum() % 2 == 0) ? Numerator.Chyselnik : Numerator.Znamennyk;
+            CellParser cellParser = new CellParser(cell, formatter, currentDay, time, groupName, numerator);
+            
+            Assignment lesson = cellParser.getAssignment();
 
-            boolean hasHyperlink = cell.getHyperlink() != null;
-            CellParser cellParser = new CellParser(cell, formatter);
-            String teacher = cellParser.getTeacherInCell(names);
-            System.out.println(teacher);
-
-            if (!teacher.isBlank() && hasHyperlink) {
-                String classroom = cellParser.getClassroom();
-                String className = cellParser.getClassName();
-                Numerator num = cell.getRowIndex() % 2 == 0 ? Numerator.Chyselnik : Numerator.Znamennyk;
-                createAndStoreAssignment(className, currentDay, time, teacher, classroom, groupName, formatter, num);
-            } else if (!teacher.isBlank()) {
-                Row nextRow = sheet.getRow(row.getRowNum() + 1);
-                if (nextRow != null) {
-                    Cell lowerCell = nextRow.getCell(colIndex);
-                    if (lowerCell == null || lowerCell.getHyperlink() == null) {
-                        lowerCell = getMergedCellForColumn(sheet, nextRow.getRowNum(), colIndex);
-                    }
-                    if (lowerCell != null && lowerCell.getHyperlink() != null) {
-                        CellParser lowerCellParser = new CellParser(lowerCell, formatter);
-                        String classroom = lowerCellParser.getClassroom();
-                        String className = lowerCellParser.getClassName();
-                        createAndStoreAssignment(className, currentDay, time, teacher, classroom, groupName, formatter, Numerator.BOTH);
-                    }
-                }
+            if (lesson.getSubject().isBlank()) {
+                cellParser.parseLowerCell();
             }
+            storeAssignment(cellParser.getAssignment());
+
         }
     }
 
-
-    private void createAndStoreAssignment(String subject, DayOfWeek currentDay, String time, String teacherName, String classroom, String groupName, DataFormatter formatter, Numerator numerator) {
-        Assignment assignment = new Assignment(currentDay, time, subject, teacherName, classroom, groupName, numerator);
-        scheduleByGroup.computeIfAbsent(groupName, k -> new ArrayList<>()).add(assignment);
+    private void storeAssignment(Assignment assignment) {
+        scheduleByGroup.computeIfAbsent(assignment.getGroup(), k -> new ArrayList<>()).add(assignment);
     }
 
     public String getGroupName(Row headerRow, int columnIndex) {
@@ -170,15 +147,6 @@ public class ScheduleReader {
         return groupName.replaceAll("\\s+", "-");
     }
     
-    private List<String> loadNamesFromFile(String filePath) throws IOException {
-        List<String> names = new ArrayList<>();
-        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                names.add(line.trim());
-            }
-        }
-        return names;
-    }
+
 
 }

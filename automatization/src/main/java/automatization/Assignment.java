@@ -36,7 +36,7 @@ public class Assignment {
 	}
 	
 	public String toString() {
-		return "\nГрупа: " + this.getGroup_of_students() + "\nЗаняття: " + this.getSubject()
+		return "\nГрупа: " + this.getGroup() + "\nЗаняття: " + this.getSubject()
 				+ "\nДень: " + this.getDay() + "\nЧас: " + this.getTime_of_lesson()
 				+ "\nВикладач: " + this.getTeacher() + "\nКабінет: " + this.getClassroom() + "\nТип занять: " + this.getForm_of_studying()
 				+ "\nТиждень: " + this.getWeek_type_of_lesson();
@@ -66,11 +66,11 @@ public class Assignment {
 		this.day = day;
 	}
 
-	public String getGroup_of_students() {
+	public String getGroup() {
 		return group_of_students;
 	}
 
-	public void setGroup_of_students(String group_of_students) {
+	public void setGroup(String group_of_students) {
 		this.group_of_students = group_of_students;
 	}
 	
