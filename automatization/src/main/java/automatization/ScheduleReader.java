@@ -60,7 +60,7 @@ public class ScheduleReader {
 
             Cell timeCell = row.getCell(1);
             if (timeCell == null || formatter.formatCellValue(timeCell).isEmpty()) {
-                timeCell = getMergedCellValue(sheet, rowIndex, 1);
+                timeCell = getMergedCellForColumn(sheet, rowIndex, 1);
             }
 
             String time = formatter.formatCellValue(timeCell);
@@ -68,24 +68,31 @@ public class ScheduleReader {
         }
     }
 
-    private Cell getMergedCellValue(Sheet sheet, int rowIndex, int colIndex) {
+    private Cell getMergedCellForColumn(Sheet sheet, int rowIndex, int colIndex) {
+        DataFormatter formatter = new DataFormatter();
+
         for (int i = 0; i < sheet.getNumMergedRegions(); i++) {
             CellRangeAddress mergedRegion = sheet.getMergedRegion(i);
+            // Check if the current column is within the merged region
             if (mergedRegion.isInRange(rowIndex, colIndex)) {
-                Row mergedRow = sheet.getRow(mergedRegion.getFirstRow());
+                int firstRow = mergedRegion.getFirstRow();
+                int firstCol = mergedRegion.getFirstColumn();
+                System.out.println("Row: " + firstRow + " Col: " + firstCol);
+                Row mergedRow = sheet.getRow(firstRow);
+
                 if (mergedRow != null) {
-                    Cell mergedCell = mergedRow.getCell(mergedRegion.getFirstColumn());
-                    if (mergedCell != null) {
+                    Cell mergedCell = mergedRow.getCell(firstCol);
+                    if (mergedCell != null && !formatter.formatCellValue(mergedCell).isBlank()) {
+                    	System.out.println(formatter.formatCellValue(mergedCell));
                         return mergedCell;
                     }
                 }
             }
         }
+
         Row row = sheet.getRow(rowIndex);
         return row != null ? row.getCell(colIndex) : null;
     }
-
-
 
     private DayOfWeek updateDay(Row row, DataFormatter formatter, DayOfWeek currentDay) {
         Cell dayCell = row.getCell(0);
@@ -108,40 +115,50 @@ public class ScheduleReader {
     }
 
     private void processAssignmentsForRow(Row row, Row headerRow, String time, DayOfWeek currentDay, DataFormatter formatter) {
+        Sheet sheet = row.getSheet();
+
         for (int colIndex = 2; colIndex < row.getLastCellNum(); colIndex++) {
+            String groupName = getGroupName(headerRow, colIndex);
+            if (groupName == null || groupName.isEmpty()) continue;
+
             Cell cell = row.getCell(colIndex);
+            if (cell == null || formatter.formatCellValue(cell).isEmpty()) {
+                cell = getMergedCellForColumn(sheet, row.getRowNum(), colIndex);
+                System.out.println(formatter.formatCellValue(cell));
+            }
+
             if (cell == null || formatter.formatCellValue(cell).isEmpty()) continue;
 
             boolean hasHyperlink = cell.getHyperlink() != null;
-            
             CellParser cellParser = new CellParser(cell, formatter);
             String teacher = cellParser.getTeacherInCell(names);
+            System.out.println(teacher);
 
             if (!teacher.isBlank() && hasHyperlink) {
-            	String classroom = cellParser.getClassroom();
-            	String className = cellParser.getClassName();
+                String classroom = cellParser.getClassroom();
+                String className = cellParser.getClassName();
                 Numerator num = cell.getRowIndex() % 2 == 0 ? Numerator.Chyselnik : Numerator.Znamennyk;
-                createAndStoreAssignment(className, currentDay, time, teacher, classroom,  headerRow, colIndex, formatter, num);
+                createAndStoreAssignment(className, currentDay, time, teacher, classroom, groupName, formatter, num);
             } else if (!teacher.isBlank()) {
-                Row nextRow = row.getSheet().getRow(row.getRowNum() + 1);
+                Row nextRow = sheet.getRow(row.getRowNum() + 1);
                 if (nextRow != null) {
                     Cell lowerCell = nextRow.getCell(colIndex);
+                    if (lowerCell == null || lowerCell.getHyperlink() == null) {
+                        lowerCell = getMergedCellForColumn(sheet, nextRow.getRowNum(), colIndex);
+                    }
                     if (lowerCell != null && lowerCell.getHyperlink() != null) {
-                    	CellParser lowerCellParser = new CellParser(lowerCell, formatter);
-                    	String classroom = lowerCellParser.getClassroom();
-                    	String className = lowerCellParser.getClassName();
-                        createAndStoreAssignment(className, currentDay, time, teacher, classroom, headerRow, colIndex, formatter, Numerator.BOTH);
-                        continue;
+                        CellParser lowerCellParser = new CellParser(lowerCell, formatter);
+                        String classroom = lowerCellParser.getClassroom();
+                        String className = lowerCellParser.getClassName();
+                        createAndStoreAssignment(className, currentDay, time, teacher, classroom, groupName, formatter, Numerator.BOTH);
                     }
                 }
             }
         }
     }
 
-    private void createAndStoreAssignment(String subject, DayOfWeek currentDay, String time, String teacherName, String classroom, Row headerRow, int colIndex, DataFormatter formatter, Numerator numerator) {
-        String groupName = getGroupName(headerRow, colIndex);
-        if (groupName == null || groupName.isEmpty()) return;
 
+    private void createAndStoreAssignment(String subject, DayOfWeek currentDay, String time, String teacherName, String classroom, String groupName, DataFormatter formatter, Numerator numerator) {
         Assignment assignment = new Assignment(currentDay, time, subject, teacherName, classroom, groupName, numerator);
         scheduleByGroup.computeIfAbsent(groupName, k -> new ArrayList<>()).add(assignment);
     }

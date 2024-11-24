@@ -46,10 +46,7 @@ public class WordParser {
 
         for (String part : parts) {
             word.append(part);
-            System.out.println("Current word candidate: " + word.toString());
-
             String match = getMatchingWord(word.toString());
-            System.out.println(match);
             if (match != null) {
                 result.append(match).append(" ");
                 word.setLength(0);
@@ -64,8 +61,8 @@ public class WordParser {
                 result.append(word.toString().trim());
             }
         }
-
-        System.out.println("Reconstructed word: " + result.toString().trim());
+//
+//        System.out.println("Reconstructed word: " + result.toString().trim());
 
         return result.toString().trim();
     }
