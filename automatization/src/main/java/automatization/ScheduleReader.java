@@ -100,7 +100,7 @@ public class ScheduleReader {
         			return DayOfWeek.T;
         		case ("середа"):
         			return DayOfWeek.W;
-        		case ("четверг"):
+        		case ("четвер"):
         			return DayOfWeek.S;
         		case ("п'ятниця"):
         			return DayOfWeek.F;	
@@ -125,6 +125,10 @@ public class ScheduleReader {
             
             Numerator numerator = (row.getRowNum() % 2 == 0) ? Numerator.Chyselnik : Numerator.Znamennyk;
             CellParser cellParser = new CellParser(cell, formatter, currentDay, time, groupName, numerator);
+            
+            if (cellParser.getAssignment() == null) {
+            	continue;
+            }
             
             Assignment lesson = cellParser.getAssignment();
 

@@ -22,45 +22,53 @@ public class CellParser {
     private final List<String> names;
     private String cellValue;
     private String classroom;
-    private String className;
+    private String subject;
+    private DayOfWeek day;
+    private Numerator numerator;
     private String teacher;
     private Sheet sh;
     private Cell lowerCell;
+    private String time;
 
     public CellParser(Cell cell, DataFormatter formatter, DayOfWeek day, String time, String group, Numerator numerator) throws IOException {
         this.cell = cell;
         this.sh = cell.getSheet();
         this.formatter = formatter;
 		this.names = this.loadNamesFromFile("names.txt");
-        this.cellValue = cleanCell(formatter.formatCellValue(cell));
-        this.classroom = extractClassroom(this.cellValue);
+        this.cellValue = cleanCell(formatter.formatCellValue(cell)).trim();
         this.teacher = extractTeacher(this.cellValue);
-        this.className = extractClassName(this.cellValue);
-        System.out.println(cellValue);
-        System.out.println(classroom);
-        System.out.println(teacher);
-		parseData(day, time, group, numerator);
-		
+        if (this.teacher.isBlank()) {
+        	return;
+        }
+        if (this.cellValue.isBlank()) {
+        	parseLowerCell();
+        }
+		this.classroom = extractClassroom(this.cellValue);
+		this.subject = extractSubject(this.cellValue);
+		this.day = day;
+		this.numerator = numerator;
+		this.time = time;
+		setAssignment(group);
     }
    
     public Assignment getAssignment() {
     	return assignment;
     }
     
-    private void parseData(DayOfWeek currentDay, String time, String groupName, Numerator numerator) {
+    private void setAssignment(String groupName) {
         this.assignment = new Assignment(
-            currentDay,
-            time,
-            getClassName(),
-            getTeacher(),
-            getClassroom(),
+            this.day,
+            this.time,
+            this.subject,
+            this.teacher,
+            this.classroom,
             groupName,
-            numerator
+            this.numerator
         );
     }
     
-    private String extractClassName(String rawName) {
-        String rawValue = cleanCell(rawName);
+    private String extractSubject(String rawName) {
+        String rawValue = cleanCell(rawName).trim();
         String className = WordParser.reconstructWord(rawValue);
         return className;
     }
@@ -68,6 +76,8 @@ public class CellParser {
     private String extractTeacher(String cellValue) {
         String name = containsNameFromList(this.names, cellValue);
         this.cellValue = cellValue.replace(name, "").trim();
+        System.out.println(this.cellValue);
+        System.out.println(name);
         return name;
     }
 
@@ -75,31 +85,24 @@ public class CellParser {
         String regex = "\\b\\d{3}[а-яА-Яa-zA-Z]?";
         Matcher matcher = Pattern.compile(regex).matcher(cellValue);
         String match = matcher.find() ? matcher.group() : "online";
-        this.cellValue = WordParser.reconstructWord(cellValue.replace(match, "").trim());
-        
+//        this.cellValue = WordParser.reconstructWord(cellValue.replace(match, "").trim());
+        this.cellValue = this.cellValue.replace(match, "");
         return match;
     }
     
     public void parseLowerCell() {
-    	if (!this.teacher.isBlank()) {
     		this.cell.getColumnIndex();
     		Row lowerRow = sh.getRow(this.cell.getRowIndex() + 1);
     		this.lowerCell = lowerRow.getCell(this.cell.getColumnIndex());
     		this.cellValue = cleanCell(this.formatter.formatCellValue(lowerCell));
-    		this.parseClassroom();
-    		this.classroom = this.getClassroom();
-    		
-    		this.assignment.setClassroom(classroom);
-    		this.assignment.setSubject(cellValue);
     	}
-    }
 
     public String getFormattedValue() {
         return cellValue;
     }
 
     public String getClassName() {
-        return this.className;
+        return this.subject;
     }
     
     public String getClassName(String rawData) {
@@ -107,15 +110,6 @@ public class CellParser {
         String match = WordParser.reconstructWord(rawValue);
         this.assignment.setSubject(rawValue.replaceFirst(match, ""));
         return match;
-    }
-
-    private String parseTeacher() {
-        String value = getFormattedValue();
-        String name = containsNameFromList(names, value);
-        if (name.isBlank()) {
-        	return "";
-        }
-        return name;
     }
     
     public String getTeacher() {
