@@ -10,6 +10,8 @@ import automatization.enums.DayOfWeek;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -76,8 +78,6 @@ public class CellParser {
     private String extractTeacher(String cellValue) {
         String name = containsNameFromList(this.names, cellValue);
         this.cellValue = cellValue.replace(name, "").trim();
-        System.out.println(this.cellValue);
-        System.out.println(name);
         return name;
     }
 
@@ -121,7 +121,6 @@ public class CellParser {
         Matcher matcher = Pattern.compile(regex).matcher(getFormattedValue());
         String match = matcher.find() ? matcher.group() : "online";
         this.cellValue = cellValue.replaceAll(match, "");
-        System.out.println(match);
         return match;
     }
     
@@ -141,9 +140,11 @@ public class CellParser {
         return rawName.replaceAll("\\s+", " ").trim();
     }
     
-    private List<String> loadNamesFromFile(String filePath) throws IOException {
+    private List<String> loadNamesFromFile(String fileName) throws IOException {
         List<String> names = new ArrayList<>();
-        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
+        
+        try (InputStream inputStream = getClass().getResourceAsStream("/" + fileName);
+             BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 names.add(line.trim());
@@ -151,4 +152,5 @@ public class CellParser {
         }
         return names;
     }
+
 }

@@ -3,6 +3,8 @@ package automatization;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -13,17 +15,25 @@ public class WordParser {
     private static final ArrayList<String> WORD_LIST = new ArrayList<>();
 
     static {
-        try (BufferedReader reader = new BufferedReader(new FileReader("classes.txt"))) {
+        try (InputStream inputStream = WordParser.class.getResourceAsStream("/classes.txt");
+             BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
+            
+            if (inputStream == null) {
+                throw new IOException("Resource 'classes.txt' not found.");
+            }
+
             String word;
             while ((word = reader.readLine()) != null) {
                 WORD_LIST.add(word.trim());
             }
 
             WORD_LIST.sort((a, b) -> b.length() - a.length());
+
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
 
     public static boolean isInList(String word) {
         return WORD_LIST.contains(word);
@@ -60,8 +70,6 @@ public class WordParser {
                 result.append(word.toString().trim());
             }
         }
-
-        System.out.println("Reconstructed word: " + result.toString().trim());
 
         return result.toString().trim();
     }

@@ -45,7 +45,7 @@ public class DatabaseHandler {
                 }
             }
 
-            System.out.println("Данные успешно записаны в базу данных!");
+            System.out.println("Дані було успішно записано до бази даних!");
         }
     }
 }
