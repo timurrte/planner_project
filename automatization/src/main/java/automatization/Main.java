@@ -25,11 +25,6 @@ public class Main {
 	    DatabaseHandler dbHandler = new DatabaseHandler(url, user, password);
 	    dbHandler.insertTimetableIntoDatabase(timetable);
 
-	    for (String key : timetable.keySet()) {
-	    	for (Assignment val : timetable.get(key)) {
-	    		System.out.println(val);
-	    	}
-	    }
 	  }
 
 }
